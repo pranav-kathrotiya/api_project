@@ -1,0 +1,160 @@
+:root {
+    --primary: #F9813A;
+    --secondary: #3D56B2;
+    --secondary-light: #FCF1F1;
+    --dark: #14279B;
+    --light: #f7f7f7;
+    --black: #212529;
+    --gray: #545a6d;
+    --white: #ffffff;
+    --success: #198754;
+    --danger: #dc3545;
+    --warning: #ffc107;
+}
+
+/* dropdown */
+.arrow-none.dropdown-toggle::after {
+    display: none;
+}
+
+.dropdown-item.dropdown-item-danger {
+    color: var(--danger) !important;
+}
+
+.dropdown-item.active, .dropdown-item:active {
+    color: #1e2125;
+    background-color: #e9ecef;
+}
+
+.dropdown-item-danger:hover, .dropdown-item-danger:focus {
+    color: var(--white) !important;
+    background-color: var(--danger);
+}
+
+.dropdown-menu {
+    border: 0;
+    border-radius: 0;
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+    -webkit-animation-name: DropDownSlide;
+    animation-name: DropDownSlide;
+    -webkit-animation-duration: 0.3s;
+    animation-duration: 0.3s;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+}
+
+@keyframes DropDownSlide {
+    100% {
+        -webkit-transform: translateY(0);
+        transform: translateY(0);
+    }
+
+    0% {
+        -webkit-transform: translateY(10px);
+        transform: translateY(10px);
+    }
+}
+
+/* card */
+.card {
+    box-shadow: 0 0.75rem 1.5rem rgba(18, 38, 63, 0.03);
+    border: 0;
+}
+
+/* color */
+.gray-text{
+    color: var(--gray) !important;
+}
+
+.black-text{
+    color: var(--black) !important;
+}
+
+/* button */
+.btn {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 12px;
+    width: fit-content;
+}
+
+.btn-sm{
+    font-size: 12px;
+    padding: 4px 8px;
+    gap: 6px;
+}
+
+.btn-primary{
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-primary:hover{
+    border-color: #f55e06 !important;
+    background-color: #f55e06 !important;
+}
+
+/* form controls */
+.form-group{
+    margin-bottom: 16px;
+}
+
+.form-group label{
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+.form-group label span{
+    color: var(--danger);
+}
+
+.form-control{
+    font-size: 14px;
+    padding: 9px 12px;
+    padding-right: 34px;
+}
+
+.form-select{
+    font-size: 14px;
+    padding: 9px 12px;
+}
+
+/* fomr heading */
+blockquote{
+    margin: 0 0 20px;
+    padding: 10px 20px;
+    font-size: 17px;
+    border-left: 5px solid var(--primary) !important;
+    border: 1px solid #ced4da49;
+    color: var(--black);
+}
+
+/* heading */
+.heading-box{
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.heading-box .heading-small{
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--primary);
+    padding: 5px 15px;
+    background-color: #dae0f5;
+    display: inline-block;
+    margin: 0 auto;
+    margin-bottom: 12px;
+    border-radius: 25px;
+}
+
+.heading-box .section-heading{
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--black);
+    margin-bottom: 0;
+}
