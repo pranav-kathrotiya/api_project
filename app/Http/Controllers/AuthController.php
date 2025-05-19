@@ -19,6 +19,9 @@ class AuthController extends ApiController
         try {
             // ✅ Stop at First Validation Error
             $validated = $request->validate([
+                'guest_id' => 'required|string',
+                'device_id' => 'required|string',
+                'device_token' => 'required|string',
                 'name' => 'required|string|max:255',
                 'phone_number' => 'required|numeric',
                 'email' => 'required|string|email|max:255|unique:users',
@@ -27,6 +30,9 @@ class AuthController extends ApiController
 
             // User Create Karein
             $user = new User();
+            $user->guest_id = $validated['guest_id'];
+            $user->device_id = $validated['device_id'];
+            $user->device_token = $validated['device_token'];
             $user->name = $validated['name'];
             $user->phone_number = $validated['phone_number'];
             $user->email = $validated['email'];
