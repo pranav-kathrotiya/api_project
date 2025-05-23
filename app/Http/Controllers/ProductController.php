@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdminLocation;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductImage;
 use Illuminate\Http\Request;
 use Exception;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class ProductController extends ApiController
@@ -17,11 +17,13 @@ class ProductController extends ApiController
         try {
             $validated = $request->validate([
                 'product_id' => 'nullable|exists:products,id',
+                'shop_location_id' => 'required',
                 'category_id' => 'required',
                 'name' => 'required|string',
                 'detail' => 'required|string',
                 'description' => 'required|string',
                 'price' => 'required|numeric',
+                'image' => 'required|array', // Multiple images
                 'image.*' => 'required|image|mimes:jpg,jpeg,png,svg,webp|max:2048', // Multiple images
             ]);
 
@@ -30,6 +32,14 @@ class ProductController extends ApiController
                 return response()->json([
                     'status' => 0,
                     'message' => 'Category not found!'
+                ], 404);
+            }
+
+            $location = AdminLocation::find($validated['shop_location_id']);
+            if (!$location) {
+                return response()->json([
+                    'status' => 0,
+                    'message' => 'Location not found!'
                 ], 404);
             }
 
@@ -47,6 +57,7 @@ class ProductController extends ApiController
                 $message = 'Product added successfully!';
             }
 
+            $product->shop_location_id = $validated['shop_location_id'];
             $product->category_id = $validated['category_id'];
             $product->name = $validated['name'];
             $product->detail = $validated['detail'];
@@ -62,7 +73,7 @@ class ProductController extends ApiController
                     $image->move(public_path('uploads/products'), $imageName);
 
                     // Image URL store karva mate
-                    $imageUrls[] = url('uploads/products/' . $imageName);
+                    $imageUrls[] = url('public/uploads/products/' . $imageName);
 
                     // Image data database ma store karva (assuming you have a separate `product_images` table)
                     ProductImage::create([
@@ -95,36 +106,14 @@ class ProductController extends ApiController
         try {
             // Fetch query parameters
             $category_id = $request->input('category_id');
-            $perPage = $request->input('per_page', 10); // Default 10 items per page
 
             // Query builder with optional filtering
-            $query = Product::with('images'); // Load images relationship
+            $query = Product::with('images', 'shoplocation'); // Load images relationship
 
             if (!empty($category_id)) {
                 $query->where('category_id', $category_id);
             }
-
-            // Paginate the results
-            $products = $query->paginate($perPage);
-
-            // Transform product data with full image URLs
-            $products->getCollection()->transform(function ($product) {
-                // Transform main image URL (if applicable)
-                $product->image = $product->image ? asset('uploads/products/' . $product->image) : null;
-
-                // Transform multiple images
-                $product->images = $product->images->map(function ($image) {
-                    return [
-                        'id' => $image->id,
-                        'product_id' => $image->product_id,
-                        'image' => asset('uploads/products/' . $image->image), // Full URL for image
-                        'created_at' => $image->created_at,
-                        'updated_at' => $image->updated_at
-                    ];
-                });
-
-                return $product;
-            });
+            $products = $query->paginate(10);
 
             if ($products->isEmpty()) {
                 return response()->json([
