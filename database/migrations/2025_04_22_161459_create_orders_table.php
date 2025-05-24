@@ -34,7 +34,7 @@ class CreateOrdersTable extends Migration
             $table->text('house_and_building')->nullable();
             $table->text('area_address')->nullable();
             $table->text('landmark')->nullable();
-            $table->text('status')->default('1')->comment('1=Pending, 2=Approved, 3=Processed, 4=Shipping, 5=Delivered')->nullable();
+            $table->integer('status')->default('1')->comment('1=Pending, 2=Approved, 3=Processed, 4=Shipping, 5=Delivered')->nullable();
             $table->timestamps();
         });
     }

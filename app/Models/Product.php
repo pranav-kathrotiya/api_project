@@ -17,6 +17,6 @@ class Product extends Model
     
     public function shoplocation()
     {
-        return $this->hasOne(AdminLocation::class, 'shop_location_id', 'id');
+        return $this->hasOne(AdminLocation::class, 'id', 'shop_location_id');
     }
 }
