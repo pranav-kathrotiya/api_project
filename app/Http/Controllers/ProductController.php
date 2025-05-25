@@ -69,7 +69,7 @@ class ProductController extends ApiController
             if ($request->hasFile('image')) {
                 foreach ($request->file('image') as $image) {
                     $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                    $image->move(public_path('uploads/products', $imageName));
+                    $image->move('public/uploads/products', $imageName);
 
                     // Image URL store karva mate
                     // $imageUrls[] = url('public/uploads/products/' . $imageName);
