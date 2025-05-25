@@ -23,7 +23,6 @@ class ProductController extends ApiController
                 'detail' => 'required|string',
                 'description' => 'required|string',
                 'price' => 'required|numeric',
-                'image' => 'required|array', // Multiple images
                 'image.*' => 'required|image|mimes:jpg,jpeg,png,svg,webp|max:2048', // Multiple images
             ]);
 
