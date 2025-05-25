@@ -67,20 +67,23 @@ class ProductController extends ApiController
             // $imageUrls = [];
 
             if ($request->hasFile('image')) {
+                $destinationPath = public_path('uploads/products');
+
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+
                 foreach ($request->file('image') as $image) {
                     $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                    $image->move('public/uploads/products', $imageName);
+                    $image->move($destinationPath, $imageName);
 
-                    // Image URL store karva mate
-                    // $imageUrls[] = url('public/uploads/products/' . $imageName);
-
-                    // Image data database ma store karva (assuming you have a separate `product_images` table)
                     ProductImage::create([
                         'product_id' => $product->id,
                         'image' => $imageName
                     ]);
                 }
             }
+
 
             return $this->sendSuccess($message, [
                 'product' => $product,
