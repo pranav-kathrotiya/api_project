@@ -65,7 +65,7 @@ class ProductController extends ApiController
             $product->price = $validated['price'];
             $product->save(); // Product ne save kariye pehla, pachi images add kari shakay
 
-            $imageUrls = [];
+            // $imageUrls = [];
 
             if ($request->hasFile('image')) {
                 foreach ($request->file('image') as $image) {
@@ -73,7 +73,7 @@ class ProductController extends ApiController
                     $image->move(public_path('uploads/products'), $imageName);
 
                     // Image URL store karva mate
-                    $imageUrls[] = url('public/uploads/products/' . $imageName);
+                    // $imageUrls[] = url('public/uploads/products/' . $imageName);
 
                     // Image data database ma store karva (assuming you have a separate `product_images` table)
                     ProductImage::create([
@@ -85,7 +85,7 @@ class ProductController extends ApiController
 
             return $this->sendSuccess($message, [
                 'product' => $product,
-                'image_urls' => $imageUrls
+                // 'image_urls' => $imageUrls
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
