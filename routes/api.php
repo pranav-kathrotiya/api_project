@@ -27,9 +27,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::post('/register', [AuthController::class, 'register']);
-// Route::post('/login', [AuthController::class, 'login']);
-Route::post('/send-otp', [AuthController::class, 'sendOtp']);
-Route::post('/login-with-otp', [AuthController::class, 'loginWithOtp']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/change-password', [AuthController::class, 'change_password']);
+// Route::post('/send-otp', [AuthController::class, 'sendOtp']);
+// Route::post('/login-with-otp', [AuthController::class, 'loginWithOtp']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/address', [AddressController::class, 'address']);

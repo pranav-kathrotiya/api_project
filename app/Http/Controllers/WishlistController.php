@@ -45,13 +45,10 @@ class WishlistController extends ApiController
     {
         try {
             $request->validate([
-                'user_id' => 'required|integer',
-                'product_id' => 'required|integer'
+                'wishlist_id' => 'required|integer'
             ]);
 
-            $deleted = Wishlist::where('user_id', $request->user_id)
-                ->where('product_id', $request->product_id)
-                ->delete();
+            $deleted = Wishlist::where('id', $request->wishlist_id)->delete();
 
             if ($deleted) {
                 return response()->json([
@@ -64,6 +61,11 @@ class WishlistController extends ApiController
                     'message' => 'Item not found in wishlist!'
                 ], 404);
             }
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => 0,
+                'message' => $e->validator->errors()->first()
+            ], 422);
         } catch (Exception $e) {
             return response()->json([
                 'status' => 0,
@@ -80,7 +82,7 @@ class WishlistController extends ApiController
                 'user_id' => 'required|integer'
             ]);
 
-            $wishlist = Wishlist::where('user_id', $request->user_id)->get();
+            $wishlist = Wishlist::join('products', 'products.id', '=', 'wishlists.product_id')->where('user_id', $request->user_id)->get();
 
             return response()->json([
                 'status' => 1,
