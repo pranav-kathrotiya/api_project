@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminLocationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\FcmController;
 use App\Http\Controllers\GiveawayBannerController;
 use App\Http\Controllers\GivewaysController;
 use App\Http\Controllers\OfferBannerController;
@@ -68,6 +69,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/delete-giveaway', [GivewaysController::class, 'deletegiveaway']);
     Route::post('/add-giveway-prize', [GivewaysController::class, 'addgivewayprize']);
     Route::post('/delete-prize', [GivewaysController::class, 'deleteprize']);
+
+    Route::post('/send-notification', [FcmController::class, 'sendNotification']);
     /*-----------------------------------------------------------------------------------*/
 
     Route::post('/add-offer-banner', [OfferBannerController::class, 'addOfferBanner']);

@@ -8,9 +8,12 @@ use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderDetails;
 use App\Models\Product;
+use App\Models\User;
 use Exception;
+use Google\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
@@ -28,22 +31,22 @@ class OrderController extends Controller
 
             $adminlocation = AdminLocation::first();
             $cartdata = Cart::where('user_id', $request->user_id)->get();
-            
+
             // $addressdata = Address::select('*', DB::raw("round(6371 * acos(cos(radians(" . $adminlocation->latitude . ")) * cos(radians(latitude)) * cos(radians(longitude) - radians(" . $adminlocation->longitude . ")) + sin(radians(" . $adminlocation->latitude . ")) * sin(radians(latitude))), 2) AS distance"))
             //     ->where('id', $request->address_id)
             //     ->first();
 
-            $addressdata = Address::select('*', DB::raw("ST_Distance_Sphere(POINT($adminlocation->longitude, $adminlocation->latitude), POINT(longitude, latitude)) / 1000 AS distance"))
+            $addressdata = Address::select('*', DB::raw("ST_Distance_Sphere(POINT($adminlocation->longitude, $adminlocation->latitude), POINT(longitude, latitude)) / 1000 - 1 AS distance"))
                 ->where('id', $request->address_id)
                 ->first();
             if (count($cartdata) > 0) {
-                $grand_total = $request->sub_total + round($addressdata->distance * 3, 2) + $request->cod_delivery_charge - $request->discount;
+                $grand_total = $request->sub_total + round($addressdata->distance * 12, 2) + $request->cod_delivery_charge - $request->discount;
 
                 $order = new Order();
                 $order->user_id = $request->user_id;
                 $order->order_number = $order_number;
                 $order->sub_total = $request->sub_total;
-                $order->delivery_charge = round($addressdata->distance * 3, 2);
+                $order->delivery_charge = round($addressdata->distance * 12, 2);
                 $order->cod_delivery_charge = $request->cod_delivery_charge;
                 $order->discount = $request->discount;
                 $order->grand_total = $grand_total;
@@ -74,6 +77,51 @@ class OrderController extends Controller
                     $orderdetail->save();
                 }
                 Cart::where('user_id', $request->user_id)->delete();
+
+                $userdata = User::first();
+                $fcm = $userdata->device_token;
+
+                $title = 'New Order Placed 🛍️';
+                $description = 'Order #' . $order_number . ' has been placed by ' . $addressdata->full_name . '. Please review and start processing.';
+                $projectId = env('PROJECTID'); # INSERT COPIED PROJECT ID
+
+                $credentialsFilePath = Storage::path('json/file.json');
+                $client = new Client();
+                $client->setAuthConfig($credentialsFilePath);
+                $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
+                $client->refreshTokenWithAssertion();
+                $token = $client->getAccessToken();
+
+                $access_token = $token['access_token'];
+
+                $headers = [
+                    "Authorization: Bearer $access_token",
+                    'Content-Type: application/json'
+                ];
+
+                $data = [
+                    "message" => [
+                        "token" => $fcm,
+                        "notification" => [
+                            "title" => $title,
+                            "body" => $description,
+                        ],
+                    ]
+                ];
+                $payload = json_encode($data);
+
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send");
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+                curl_setopt($ch, CURLOPT_VERBOSE, true); // Enable verbose output for debugging
+                $response = curl_exec($ch);
+                $err = curl_error($ch);
+                curl_close($ch);
+
                 return response()->json([
                     'status' => 1,
                     'message' => 'Order Placed Successfully!',
@@ -167,15 +215,80 @@ class OrderController extends Controller
                 'order_number' => 'required'
             ]);
 
-            $order = Order::with('orderDetails')->where('order_number', $request->order_number)->first();
-            $order->status = $request->status;
-            $order->save();
 
-            return response()->json([
-                'status' => 1,
-                'message' => 'Order Status changed successfully!',
-                'order' => $order
-            ], 200);
+            $order = Order::with('orderDetails')->where('order_number', $request->order_number)->first();
+            if (!empty($order)) {
+
+                $order->status = $request->status;
+                $order->save();
+
+                $userdata = User::where('id', $order->user_id)->first();
+                $fcm = $userdata->device_token;
+
+                if ($request->status == 2) {
+                    $title = 'Order Approved';
+                    $message = 'Your order #' . $order->order_number . ' has been approved';
+                } elseif ($request->status == 3) {
+                    $title = 'Order Processed';
+                    $message = 'Your order #' . $order->order_number . ' has been processed';
+                } elseif ($request->status == 4) {
+                    $title = 'Order Shipped';
+                    $message = 'Your order #' . $order->order_number . ' has been shipped';
+                } elseif ($request->status == 5) {
+                    $title = 'Order Delivered';
+                    $message = 'Your order #' . $order->order_number . ' has been delivered';
+                }
+
+                $projectId = env('PROJECTID'); # INSERT COPIED PROJECT ID
+
+                $credentialsFilePath = Storage::path('json/file.json');
+                $client = new Client();
+                $client->setAuthConfig($credentialsFilePath);
+                $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
+                $client->refreshTokenWithAssertion();
+                $token = $client->getAccessToken();
+
+                $access_token = $token['access_token'];
+
+                $headers = [
+                    "Authorization: Bearer $access_token",
+                    'Content-Type: application/json'
+                ];
+
+                $data = [
+                    "message" => [
+                        "token" => $fcm,
+                        "notification" => [
+                            "title" => $title,
+                            "body" => $message,
+                        ],
+                    ]
+                ];
+                $payload = json_encode($data);
+
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send");
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+                curl_setopt($ch, CURLOPT_VERBOSE, true); // Enable verbose output for debugging
+                $response = curl_exec($ch);
+                $err = curl_error($ch);
+                curl_close($ch);
+
+                return response()->json([
+                    'status' => 1,
+                    'message' => 'Order Status changed successfully!',
+                    'order' => $order
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => 0,
+                    'message' => 'Order not found!',
+                ], 200);
+            }
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => 0,
