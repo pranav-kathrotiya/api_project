@@ -85,6 +85,7 @@ class FcmController extends Controller
                 'message' => $e->validator->errors()->first()
             ], 422);
         } catch (Exception $e) {
+            dd($e);
             return response()->json([
                 'status' => 0,
                 'message' => 'Failed to sent Notification',
