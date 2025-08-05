@@ -30,7 +30,7 @@ class FcmController extends Controller
                 $description = 'I am sent test notification !';
                 $projectId = env('PROJECTID'); # INSERT COPIED PROJECT ID
 
-                $credentialsFilePath = Storage::path('json/file.json');
+                $credentialsFilePath = Storage::path('file.json');
                 $client = new GoogleClient();
                 $client->setAuthConfig($credentialsFilePath);
                 $client->addScope('https://www.googleapis.com/auth/firebase.messaging');

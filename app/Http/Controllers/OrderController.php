@@ -85,7 +85,7 @@ class OrderController extends Controller
                 $description = 'Order #' . $order_number . ' has been placed by ' . $addressdata->full_name . '. Please review and start processing.';
                 $projectId = env('PROJECTID'); # INSERT COPIED PROJECT ID
 
-                $credentialsFilePath = Storage::path('json/file.json');
+                $credentialsFilePath = Storage::path('file.json');
                 $client = new Client();
                 $client->setAuthConfig($credentialsFilePath);
                 $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
@@ -241,7 +241,7 @@ class OrderController extends Controller
 
                 $projectId = env('PROJECTID'); # INSERT COPIED PROJECT ID
 
-                $credentialsFilePath = Storage::path('json/file.json');
+                $credentialsFilePath = Storage::path('file.json');
                 $client = new Client();
                 $client->setAuthConfig($credentialsFilePath);
                 $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
